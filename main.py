@@ -21,7 +21,9 @@ dp = Dispatcher(bot, storage=storage)
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
-    await message.answer('Привет')
+    await message.answer(
+        f'Hello and welcome, {message.from_user.first_name} {message.from_user.last_name}!'
+    )
 
 
 if __name__ == '__main__':
