@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 
 storage = MemoryStorage()
 
-bot = Bot(token=Config.TOKEN)
+bot = Bot(token=Config.BOT_TOKEN)
 dp = Dispatcher(bot, storage=storage)
 
 
@@ -24,6 +24,13 @@ async def start(message: types.Message):
     await message.answer(
         f'Hello and welcome, {message.from_user.first_name} {message.from_user.last_name}!'
     )
+
+
+@dp.message_handler(commands=['about'])
+async def about(message: types.Message):
+    # TODO: write about message
+    about_message = ''
+    await message.answer(about_message)
 
 
 if __name__ == '__main__':
