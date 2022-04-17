@@ -56,6 +56,15 @@ class InternationalMatchesParser:
 
         return len(country_df)
 
+    def after_year(self, year: int):
+        # Returns the df of matched held after a given year
+        if year <= 1872:
+            return self.df
+
+        filtered = self.df['date'].str[:4].astype(int) >= year
+
+        return self.df[filtered]
+
     def get_country_win_rate(self, country):
 
         win_rate = self.get_n_of_wins_for_country(country) /\
@@ -64,3 +73,7 @@ class InternationalMatchesParser:
         win_rate = round(win_rate * 100, 1)
 
         return win_rate
+
+
+imp = InternationalMatchesParser()
+print(imp.after_year(2018))
