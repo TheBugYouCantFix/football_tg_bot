@@ -6,10 +6,10 @@ from utils import get_scheduler
 from datetime import datetime
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-
 from config import Config
-
 from aiogram import Bot, Dispatcher, executor, types
+
+from parsing_data import InternationalMatchesParser
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,6 +17,8 @@ storage = MemoryStorage()
 
 bot = Bot(token=Config.BOT_TOKEN)
 dp = Dispatcher(bot, storage=storage)
+
+imp = InternationalMatchesParser()
 
 
 @dp.message_handler(commands=['start'])
@@ -31,6 +33,22 @@ async def about(message: types.Message):
     # TODO: write about message
     about_message = ''
     await message.answer(about_message)
+
+
+@dp.message_handler(commands=['win_rate'])
+async def win_rate(message: types.Message):
+    try:
+        country = message.text.replace('/win_rate ', '')
+        print(country)
+        ans = f"Win rate of {country} national team: " \
+              f"{imp.get_country_win_rate(country)}%"
+
+        await message.answer(ans)
+
+    except Exception as e:
+        print(e)
+        await message.answer("Something went wrong."
+                             " Please, check if the country name is correct and try again")
 
 
 if __name__ == '__main__':

@@ -11,8 +11,8 @@ class InternationalMatchesParser:
         self.df.insert(0, 'id', self.df.pop('id'))
 
     def get_country_df(self, country):
-        filtered = (self.df['home_team'] == country) |\
-                   (self.df['away_team'] == country)
+        filtered = (self.df['home_team'].str.lower() == country.lower()) |\
+                   (self.df['away_team'].str.lower() == country.lower())
 
         return self.df[filtered]
 
@@ -47,6 +47,20 @@ class InternationalMatchesParser:
 
         return counter
 
+    def matches_played(self, country, official_only=True):
+        country_df = self.get_country_df(country)
 
-imp = InternationalMatchesParser()
-print(imp.get_n_of_wins_for_country('Cyprus'))
+        if official_only:
+            official_matches = country_df['tournament'] != 'Friendly'
+            country_df = country_df[official_matches]
+
+        return len(country_df)
+
+    def get_country_win_rate(self, country):
+
+        win_rate = self.get_n_of_wins_for_country(country) /\
+                   self.matches_played(country)
+
+        win_rate = round(win_rate * 100, 1)
+
+        return win_rate
