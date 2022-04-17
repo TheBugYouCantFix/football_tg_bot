@@ -38,10 +38,18 @@ async def about(message: types.Message):
 @dp.message_handler(commands=['win_rate'])
 async def win_rate(message: types.Message):
     try:
-        country = message.text.replace('/win_rate ', '')
-        print(country)
+        text = message.text.replace('/win_rate ', '')
+        country = text[:text.find('since')].strip()
+        year = text.split()[-1]
+        print(country, year)
+
+        win_rate = imp.get_country_win_rate(country)
+
+        if year.isdigit():
+            win_rate = imp.get_country_win_rate(country, int(year))
+
         ans = f"Win rate of {country} national team: " \
-              f"{imp.get_country_win_rate(country)}%"
+              f"{win_rate}%"
 
         await message.answer(ans)
 
