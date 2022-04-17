@@ -15,8 +15,12 @@ class InternationalMatchesParser:
         home_team_score, away_team_score \
             = self.df.loc[match_id, 'home_team': 'away_score']
 
-        return f"{home_team_name} - {home_team_score}, " \
-               f"{away_team_name} - {away_team_score}"
+        if home_team_score > away_team_score:
+            return home_team_name
+        elif home_team_score < away_team_score:
+            return away_team_name
+
+        return 'Draw'
 
 
 imp = InternationalMatchesParser()
