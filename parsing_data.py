@@ -2,15 +2,21 @@ import pandas as pd
 
 
 class InternationalMatchesParser:
-    df = pd.read_csv('./data/results.csv')
-    column_names = [i for i in df.columns]
+    PATH = './data/results.csv'
+    df = pd.read_csv(PATH)
+
+    # Code to add an "id" column:
+    def __init__(self):
+        self.df['id'] = self.df.index
+        self.df.insert(0, 'id', self.df.pop('id'))
 
     def get_country_df(self, country):
-        filtered = (self.df['home_team'] == country) | (self.df['away_team'] == country)
+        filtered = (self.df['home_team'] == country) |\
+                   (self.df['away_team'] == country)
+
         return self.df[filtered]
 
     def get_match_result(self, match_id):
-        # Return value example: England - 4 Scotland - 2
         home_team_name, away_team_name, \
         home_team_score, away_team_score \
             = self.df.loc[match_id, 'home_team': 'away_score']
@@ -22,6 +28,25 @@ class InternationalMatchesParser:
 
         return 'Draw'
 
+    def get_n_of_wins_for_country(self, country, official_only=True):
+        # Returns number of wins in official(non-friendly) matches for a passes country
+        counter = 0
+
+        country_df = self.get_country_df(country)
+
+        if official_only:
+            official_matches = country_df['tournament'] != 'Friendly'
+            country_df = country_df[official_matches]
+
+        for i in range(country_df.shape[0]):
+            match_id = country_df.iloc[i, 0]
+            match_result = self.get_match_result(match_id)
+
+            if match_result.lower() == country.lower():
+                counter += 1
+
+        return counter
+
 
 imp = InternationalMatchesParser()
-print(imp.get_match_result(1000))
+print(imp.get_n_of_wins_for_country('Cyprus'))
