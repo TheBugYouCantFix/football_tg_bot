@@ -98,14 +98,26 @@ class InternationalMatchesParser:
 
             if rate == -1 and hasattr(country, 'official_name'):
                 name = country.official_name
-                rate = self.get_country_win_rate(name)
+
+            wins = self.get_n_of_wins_for_country(self.df, name)
+            rate = self.get_country_win_rate(name)
 
             if rate == -1:
                 continue
 
-            data.append([name, rate])
+            data.append([name, wins, rate])
 
-        self.win_rate_df = pd.DataFrame(data, columns=['country', 'win_rate'])
+        self.win_rate_df = pd.DataFrame(data, columns=['country', 'wins', 'win_rate'])
+
+        max_n_of_wins = self.win_rate_df['wins'].max()
+        for i in range(self.win_rate_df.shape[0]):
+            row = self.win_rate_df.iloc[i]
+            wins = row['wins']
+            coefficient = 0.3 + (wins / max_n_of_wins)
+            final_rate = row['win_rate'] * coefficient
+
+            self.win_rate_df.iloc[i, 2] = final_rate  # setting a new value of win rate
+
         sorted_df = self.win_rate_df.sort_values(by=['win_rate'], ascending=False)
         self.build_win_rate_graph(sorted_df)
 
@@ -113,3 +125,7 @@ class InternationalMatchesParser:
     def build_win_rate_graph(df):
         df.head().plot(x='country', y='win_rate')
         plt.show()
+
+
+# imp = InternationalMatchesParser()
+# imp.fill_countries_win_rate_df()
