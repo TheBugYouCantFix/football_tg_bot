@@ -1,7 +1,7 @@
 import logging
 import asyncio
 from aiojobs import create_scheduler
-from utils import get_scheduler
+from utils import get_scheduler, has_year
 
 from datetime import datetime
 
@@ -44,17 +44,21 @@ async def win_rate(message: types.Message):
     try:
         # TODO: improve argument parsing
         text = message.text.replace('/win_rate ', '')
-        country = text[:text.find('since')].strip()
-        year = text.split()[-1]
-        print(country, year)
 
-        win_rate = imp.get_country_win_rate(country)
+        if has_year(text):
+            country = text[:text.find('since')].strip()
+            year = text.split()[-1]
+            rate = imp.get_country_win_rate(country, int(year))
 
-        if year.isdigit():
-            win_rate = imp.get_country_win_rate(country, int(year))
+            print(country, year)
+        else:
+            country = text
+            rate = imp.get_country_win_rate(country)
+
+            print(country)
 
         ans = f"Win rate of {country} national team: " \
-              f"{win_rate}%"
+              f"{rate}%"
 
         await message.answer(ans)
 
