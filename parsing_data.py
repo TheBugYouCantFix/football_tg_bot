@@ -17,6 +17,12 @@ class InternationalMatchesParser:
 
         return frame[filtered]
 
+    @staticmethod
+    def get_official_matches_df(frame: pd.DataFrame):
+        official_matches = frame['tournament'] != 'Friendly'
+
+        return frame[official_matches]
+
     def get_match_result(self, match_id):
         home_team_name, away_team_name, \
         home_team_score, away_team_score \
@@ -36,8 +42,7 @@ class InternationalMatchesParser:
         country_df = self.get_country_df(frame, country)
 
         if official_only:
-            official_matches = country_df['tournament'] != 'Friendly'
-            country_df = country_df[official_matches]
+            country_df = self.get_official_matches_df(country_df)
 
         for i in range(country_df.shape[0]):
             match_id = country_df.iloc[i, 0]
@@ -52,8 +57,7 @@ class InternationalMatchesParser:
         country_df = self.get_country_df(frame, country)
 
         if official_only:
-            official_matches = country_df['tournament'] != 'Friendly'
-            country_df = country_df[official_matches]
+            country_df = self.get_official_matches_df(country_df)
 
         return len(country_df)
 
@@ -75,3 +79,6 @@ class InternationalMatchesParser:
         win_rate = round(win_rate * 100, 1)
 
         return win_rate
+
+
+    # TODO: implement graphs of win rate

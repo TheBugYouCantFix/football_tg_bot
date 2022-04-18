@@ -30,14 +30,19 @@ async def start(message: types.Message):
 
 @dp.message_handler(commands=['about'])
 async def about(message: types.Message):
-    # TODO: write about message
-    about_message = ''
+    about_message = """
+    I am a bot that provides some interesting date about football national teams.
+Try out some of my commands.
+Press "/" to see the typehints of the commands and their description.
+    """
+
     await message.answer(about_message)
 
 
 @dp.message_handler(commands=['win_rate'])
 async def win_rate(message: types.Message):
     try:
+        # TODO: improve argument parsing
         text = message.text.replace('/win_rate ', '')
         country = text[:text.find('since')].strip()
         year = text.split()[-1]
