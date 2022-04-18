@@ -2,3 +2,5 @@ aiogram==2.19
 aiojobs==1.0.0
 requests==2.27.1
 pandas==1.4.2
+pycountry==22.3.5
+matplotlib==3.5.1
