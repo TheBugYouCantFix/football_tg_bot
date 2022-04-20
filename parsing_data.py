@@ -13,6 +13,8 @@ class InternationalMatchesParser:
         self.df['id'] = self.df.index
         self.df.insert(0, 'id', self.df.pop('id'))
 
+        self.win_rate_df = pd.DataFrame(columns=['year', 'wr_df'])
+
     @staticmethod
     def get_country_df(frame: pd.DataFrame, country):
         filtered = (frame['home_team'].str.lower() == country.lower()) | \
@@ -88,7 +90,7 @@ class InternationalMatchesParser:
 
         return win_rate
 
-    def fill_countries_win_rate_df(self, df: pandas.DataFrame):
+    def fill_countries_win_rate_df(self, df: pandas.DataFrame, year):
         data = []
 
         for country in pc.countries:
@@ -120,7 +122,14 @@ class InternationalMatchesParser:
             df.at[i, 'win_rate'] = final_rate  # setting a new value of win rate
 
         sorted_df = df.sort_values(by=['win_rate'], ascending=False)
-        self.build_win_rate_graph(sorted_df, 10)
+
+        length = self.win_rate_df.shape[1]
+        self.win_rate_df.at[length, 'year'] = year
+        self.win_rate_df.at[length, 'wr_df'] = sorted_df
+
+        print(self.win_rate_df)
+
+        # self.build_win_rate_graph(sorted_df, 10)
 
     @staticmethod
     def build_win_rate_graph(df: pd.DataFrame, n=5):
@@ -133,5 +142,6 @@ class InternationalMatchesParser:
 
 if __name__ == '__main__':
     imp = InternationalMatchesParser()
-    new_df = imp.after_year(2020)
-    imp.fill_countries_win_rate_df(new_df)
+    year = 2020
+    new_df = imp.after_year(year)
+    imp.fill_countries_win_rate_df(new_df, year)
