@@ -1,3 +1,4 @@
+import pandas
 import pandas as pd
 import pycountry as pc
 import matplotlib.pyplot as plt
@@ -12,11 +13,9 @@ class InternationalMatchesParser:
         self.df['id'] = self.df.index
         self.df.insert(0, 'id', self.df.pop('id'))
 
-        self.win_rate_df = None
-
     @staticmethod
     def get_country_df(frame: pd.DataFrame, country):
-        filtered = (frame['home_team'].str.lower() == country.lower()) |\
+        filtered = (frame['home_team'].str.lower() == country.lower()) | \
                    (frame['away_team'].str.lower() == country.lower())
 
         return frame[filtered]
@@ -29,7 +28,7 @@ class InternationalMatchesParser:
 
     def get_match_result(self, match_id):
         home_team_name, away_team_name, \
-        home_team_score, away_team_score \
+            home_team_score, away_team_score \
             = self.df.loc[match_id, 'home_team': 'away_score']
 
         if home_team_score > away_team_score:
@@ -89,7 +88,7 @@ class InternationalMatchesParser:
 
         return win_rate
 
-    def fill_countries_win_rate_df(self):
+    def fill_countries_win_rate_df(self, df: pandas.DataFrame):
         data = []
 
         for country in pc.countries:
@@ -99,7 +98,7 @@ class InternationalMatchesParser:
             if rate == -1 and hasattr(country, 'official_name'):
                 name = country.official_name
 
-            wins = self.get_n_of_wins_for_country(self.df, name)
+            wins = self.get_n_of_wins_for_country(df, name)
             rate = self.get_country_win_rate(name)
 
             if rate == -1:
@@ -107,25 +106,32 @@ class InternationalMatchesParser:
 
             data.append([name, wins, rate])
 
-        self.win_rate_df = pd.DataFrame(data, columns=['country', 'wins', 'win_rate'])
+        df = pd.DataFrame(data, columns=['country', 'wins', 'win_rate'])
 
-        max_n_of_wins = self.win_rate_df['wins'].max()
-        for i in range(self.win_rate_df.shape[0]):
-            row = self.win_rate_df.iloc[i]
+        max_n_of_wins = df['wins'].max()
+        for i in range(df.shape[0]):
+            row = df.iloc[i]
             wins = row['wins']
-            coefficient = 0.3 + (wins / max_n_of_wins)
-            final_rate = row['win_rate'] * coefficient
 
-            self.win_rate_df.iloc[i, 2] = final_rate  # setting a new value of win rate
+            weight = 0.7
+            coefficient = (wins / max_n_of_wins) * weight
+            final_rate = row['win_rate'] * coefficient * (2 - weight)
 
-        sorted_df = self.win_rate_df.sort_values(by=['win_rate'], ascending=False)
-        self.build_win_rate_graph(sorted_df)
+            df.at[i, 'win_rate'] = final_rate  # setting a new value of win rate
+
+        sorted_df = df.sort_values(by=['win_rate'], ascending=False)
+        self.build_win_rate_graph(sorted_df, 10)
 
     @staticmethod
-    def build_win_rate_graph(df):
-        df.head().plot(x='country', y='win_rate')
+    def build_win_rate_graph(df: pd.DataFrame, n=5):
+        print(n)
+        df = df.head(n)
+        print(df)
+        df.plot.bar(x='country', y='win_rate')
         plt.show()
 
 
-# imp = InternationalMatchesParser()
-# imp.fill_countries_win_rate_df()
+if __name__ == '__main__':
+    imp = InternationalMatchesParser()
+    new_df = imp.after_year(2020)
+    imp.fill_countries_win_rate_df(new_df)

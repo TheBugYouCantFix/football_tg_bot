@@ -1,4 +1,5 @@
 from aiojobs import Scheduler
+import pycountry as pc
 
 
 def get_scheduler(dp) -> Scheduler:
