@@ -1,4 +1,5 @@
 import logging
+import sys
 import os
 
 import asyncio
@@ -13,7 +14,18 @@ from aiogram import Bot, Dispatcher, executor, types
 
 from parsing_data import InternationalMatchesParser
 
-logging.basicConfig(level=logging.INFO)
+root = logging.getLogger()
+root.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+root.addHandler(handler)
+
+my_logger = logging.getLogger('pepa')
+
+my_logger.info('AMA WHITE !')
 
 storage = MemoryStorage()
 
@@ -52,12 +64,12 @@ async def win_rate(message: types.Message):
             year = text.split()[-1]
             rate = imp.get_country_win_rate(country, int(year))
 
-            print(country, year)
+            logging.debug(country, year)
         else:
             country = text
             rate = imp.get_country_win_rate(country)
 
-            print(country)
+            logging.debug(country)
 
         ans = f"Win rate of {country} national team: " \
               f"{rate}%"
@@ -65,7 +77,7 @@ async def win_rate(message: types.Message):
         await message.answer(ans)
 
     except Exception as e:
-        print(e)
+        logging.debug(e)
         await message.answer("Something went wrong."
                              " Please, check if the country name is correct and try again")
 

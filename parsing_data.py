@@ -5,10 +5,13 @@ import matplotlib.pyplot as plt
 
 
 class InternationalMatchesParser:
-    PATH = './data/results.csv'
-    df = pd.read_csv(PATH)
 
-    def __init__(self):
+    DRAW = 'draw'
+
+    def __init__(self, path='./data/results.csv'):
+        self.PATH = path
+        self.df = pd.read_csv(self.PATH)
+
         # Code to add an "id" column:
         self.df['id'] = self.df.index
         self.df.insert(0, 'id', self.df.pop('id'))
@@ -38,10 +41,17 @@ class InternationalMatchesParser:
         elif home_team_score < away_team_score:
             return away_team_name
 
-        return 'Draw'
+        return self.DRAW
 
     def get_n_of_wins_for_country(self, frame: pd.DataFrame, country, official_only=True):
-        # Returns number of wins in official(non-friendly) matches for a passes country
+        """
+        Returns number of wins in official(non-friendly) matches for a passes country
+
+        :param frame:
+        :param country:
+        :param official_only:
+        :return:
+        """
         counter = 0
 
         country_df = self.get_country_df(frame, country)
@@ -67,7 +77,13 @@ class InternationalMatchesParser:
         return len(country_df)
 
     def after_year(self, year: int):
-        # Returns the df of matched held after a given year
+        """
+        Returns the df of matched held after a given year
+
+        :param year:
+        :return:
+        """
+
         if year <= 1872:
             return self.df
 
