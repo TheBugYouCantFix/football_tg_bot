@@ -1,4 +1,3 @@
-import pandas
 import pandas as pd
 import pycountry as pc
 import matplotlib.pyplot as plt
@@ -106,7 +105,15 @@ class InternationalMatchesParser:
 
         return win_rate
 
-    def fill_countries_win_rate_df(self, df: pandas.DataFrame, year):
+    @staticmethod
+    def build_win_rate_graph(df: pd.DataFrame, n=5):
+        print(n)
+        df = df.head(n)
+        print(df)
+        df.plot.bar(x='country', y='win_rate')
+        plt.show()
+
+    def fill_countries_win_rate_df(self, df: pd.DataFrame, year):
         data = []
 
         for country in pc.countries:
@@ -146,14 +153,6 @@ class InternationalMatchesParser:
         print(self.win_rate_df)
 
         # self.build_win_rate_graph(sorted_df, 10)
-
-    @staticmethod
-    def build_win_rate_graph(df: pd.DataFrame, n=5):
-        print(n)
-        df = df.head(n)
-        print(df)
-        df.plot.bar(x='country', y='win_rate')
-        plt.show()
 
 
 if __name__ == '__main__':

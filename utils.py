@@ -11,13 +11,3 @@ def get_scheduler(dp) -> Scheduler:
     :return:
     """
     return dp.storage.scheduler
-
-
-def has_year(text: str) -> bool:
-    text = text.split()
-
-    for i in text:
-        if i.isdigit() and int(i) > 1000:
-            return True
-
-    return False
