@@ -2,10 +2,13 @@ import pandas as pd
 import pycountry as pc
 import matplotlib.pyplot as plt
 
+from datetime import date
+
 
 class InternationalMatchesParser:
 
     DRAW = 'draw'
+    START_YEAR = 1872
 
     def __init__(self, path='./data/results.csv'):
         self.PATH = path
@@ -150,9 +153,18 @@ class InternationalMatchesParser:
         self.win_rate_df.at[length, 'year'] = year
         self.win_rate_df.at[length, 'wr_df'] = sorted_df
 
-        print(self.win_rate_df)
+        print('-' * 10)
+        print(sorted_df.head())
 
         # self.build_win_rate_graph(sorted_df, 10)
+        return sorted_df
+
+    # def get_country_wr_df(self, country):
+    #     for year in range(self.START_YEAR, date.today().year):
+    #         wr = self.get_country_win_rate(country, year)
+    #
+    #         if wr == -1:
+    #             continue
 
 
 if __name__ == '__main__':

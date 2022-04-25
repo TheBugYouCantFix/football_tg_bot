@@ -93,8 +93,8 @@ async def win_rate(message: types.Message, state: FSMContext):
 
         year = message.text
 
-        if not year.isdigit() or int(year) < 1872 or int(year) >= date.today().year:
-            year = 1872  # default year (data in csv file starts from it)
+        if not year.isdigit() or int(year) < imp.START_YEAR or int(year) >= date.today().year:
+            year = imp.START_YEAR  # default year (data in csv file starts from it)
 
         rate = imp.get_country_win_rate(country, int(year))
 
@@ -112,6 +112,11 @@ async def win_rate(message: types.Message, state: FSMContext):
         logging.info(e)
         await message.answer("Something went wrong."
                              " Please, check if the country name is correct and try again")
+
+
+# @dp.message_handler(commands=['10_best'])
+# async def select_func(message: types.Message, state: FSMContext):
+#     pos.save
 
 
 if __name__ == '__main__':
