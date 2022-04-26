@@ -93,7 +93,7 @@ async def win_rate(message: types.Message, state: FSMContext):
 
         year = message.text
 
-        if not year.isdigit() or int(year) < imp.START_YEAR or int(year) >= date.today().year:
+        if not year.isdigit() or not imp.year_is_valid(int(year)):
             year = imp.START_YEAR  # default year (data in csv file starts from it)
 
         rate = imp.get_country_win_rate(country, int(year))

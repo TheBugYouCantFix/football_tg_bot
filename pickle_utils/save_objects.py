@@ -7,8 +7,7 @@ pos = PickleObjectSaver()
 path = os.path.relpath('../data/results.csv')
 imp = InternationalMatchesParser(path)
 
+df = imp.get_country_all_time_wr_df()
+NAME = 'all_time_wr_df'
 
-to_save = [imp.fill_countries_win_rate_df(imp.df, 2022)]
-
-for item in to_save:
-    pos.save_object(item, '1')
+pos.save_object(df, NAME)
