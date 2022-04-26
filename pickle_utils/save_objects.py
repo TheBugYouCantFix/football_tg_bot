@@ -4,7 +4,7 @@ from pickle_object_saver import PickleObjectSaver
 from parsing_data import InternationalMatchesParser
 
 pos = PickleObjectSaver()
-path = os.path.abspath('../data/results.csv')
+path = os.path.relpath('../data/results.csv')
 imp = InternationalMatchesParser(path)
 
 
