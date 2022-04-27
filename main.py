@@ -1,5 +1,5 @@
 import logging
-import sys
+from logging_setup import setup_logging
 
 from aiogram.dispatcher import FSMContext
 
@@ -10,16 +10,8 @@ from aiogram import Bot, Dispatcher, executor, types
 from parsing_data import InternationalMatchesParser
 from states import ActionsStates, WinRateStates
 
-root = logging.getLogger()
-root.setLevel(logging.INFO)
-
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-root.addHandler(handler)
-
-my_logger = logging.getLogger('main_logger')
+setup_logging()
+main_logger = logging.getLogger('main_logger')
 
 
 bot = Bot(token=Config.BOT_TOKEN)
@@ -90,7 +82,7 @@ async def win_rate(message: types.Message, state: FSMContext):
         country = data.get('country').strip()
 
         year = message.text
-        logging.info(year)
+        main_logger.info(year)
 
         if not year.isdigit() or not imp.year_is_valid(int(year)):
             year = imp.START_YEAR  # default year (data in csv file starts from it)
@@ -100,7 +92,7 @@ async def win_rate(message: types.Message, state: FSMContext):
 
         since_year = f'since {year} '
 
-        logging.info(country)
+        main_logger.info(country)
 
         ans = f"Win rate of {country.capitalize()} national team {since_year}: " \
               f"{rate}%"
@@ -109,7 +101,7 @@ async def win_rate(message: types.Message, state: FSMContext):
         await state.finish()
 
     except Exception as e:
-        logging.error(e)
+        main_logger.error(e)
         await message.answer("Something went wrong."
                              " Please, check if the country name is correct and try again")
 

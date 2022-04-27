@@ -7,7 +7,7 @@ from datetime import date
 import logging
 
 
-my_logger = logging.getLogger('parsing_logger')
+parsing_logger = logging.getLogger('parsing_logger')
 
 
 class InternationalMatchesParser:
@@ -159,6 +159,8 @@ class InternationalMatchesParser:
         return sorted_df
 
     def get_country_all_time_wr_df(self) -> pd.DataFrame:
+        parsing_logger.info('data frame filling started...')
+
         for year in range(self.START_YEAR, date.today().year):
             df = self.after_year(year)
             wr_df = self.fill_countries_win_rate_df(df)
@@ -169,6 +171,7 @@ class InternationalMatchesParser:
             self.win_rate_df.at[i, 'year'] = year
             self.win_rate_df.at[i, 'wr_df'] = wr_df
 
-            logging.info(f'year {year} stored')
+            parsing_logger.info(f'year {year} stored')
 
         return self.win_rate_df
+

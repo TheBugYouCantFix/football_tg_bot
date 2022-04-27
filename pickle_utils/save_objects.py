@@ -3,11 +3,16 @@ import os.path
 from pickle_object_saver import PickleObjectSaver
 from parsing_data import InternationalMatchesParser
 
+from logging_setup import setup_logging
+
 pos = PickleObjectSaver()
 path = os.path.relpath('../data/results.csv')
 imp = InternationalMatchesParser(path)
 
-df = imp.get_country_all_time_wr_df()
-NAME = 'all_time_wr_df'
+if __name__ == '__main__':
+    setup_logging()
 
-pos.save_object(df, NAME)
+    df = imp.get_country_all_time_wr_df()
+    NAME = 'all_time_wr_df'
+
+    pos.save_object(df, NAME)
