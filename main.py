@@ -1,8 +1,6 @@
 import logging
 import sys
 
-from datetime import date
-
 from aiogram.dispatcher import FSMContext
 
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -16,12 +14,12 @@ root = logging.getLogger()
 root.setLevel(logging.INFO)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
+handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
-my_logger = logging.getLogger('logger')
+my_logger = logging.getLogger('main_logger')
 
 
 bot = Bot(token=Config.BOT_TOKEN)
@@ -30,7 +28,7 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 imp = InternationalMatchesParser()
 
 
-@dp.message_handler(commands=['about'])
+@dp.message_handler(commands=['about'], state='*')
 async def about(message: types.Message):
     about_message = """
     I am a bot that provides some interesting date about football national teams.
@@ -42,17 +40,17 @@ Press "/" to see the typehints of the commands and their description.
 
 
 @dp.message_handler(commands=['start'], state='*')
-async def start(message: types.Message, state: FSMContext):
+async def start(message: types.Message):
 
     await message.answer(
         f'Hello and welcome, {message.from_user.first_name} {message.from_user.last_name}!'
     )
 
-    await select_func(message, state)
+    await select_func(message)
 
 
 @dp.message_handler(commands=['select_func'])
-async def select_func(message: types.Message, state: FSMContext):
+async def select_func(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(types.InlineKeyboardButton('Win rate', callback_data='wr'))
     await message.answer("Select a function", reply_markup=keyboard)
@@ -60,7 +58,7 @@ async def select_func(message: types.Message, state: FSMContext):
 
 
 @dp.callback_query_handler(state=ActionsStates.start)
-async def choose(message: types.CallbackQuery, state: FSMContext):
+async def choose(message: types.CallbackQuery):
     if message.data == 'wr':
         await bot.send_message(message.from_user.id,
                                "Input the country")
@@ -72,7 +70,7 @@ async def get_year(message: types.Message, state: FSMContext):
     country = message.text
 
     # Validating input
-    if imp.get_country_win_rate(country) == -1:
+    if imp.matches_played(imp.df, country) == 0:
         await message.answer("No such team found. Please, check if the country name is correct and try again")
         await bot.send_message(message.from_user.id,
                                "Input the country")
@@ -92,11 +90,13 @@ async def win_rate(message: types.Message, state: FSMContext):
         country = data.get('country').strip()
 
         year = message.text
+        logging.info(year)
 
         if not year.isdigit() or not imp.year_is_valid(int(year)):
             year = imp.START_YEAR  # default year (data in csv file starts from it)
 
-        rate = imp.get_country_win_rate(country, int(year))
+        df = imp.after_year(int(year))
+        rate = imp.get_country_win_rate(df, country)
 
         since_year = f'since {year} '
 
@@ -109,15 +109,9 @@ async def win_rate(message: types.Message, state: FSMContext):
         await state.finish()
 
     except Exception as e:
-        logging.info(e)
+        logging.error(e)
         await message.answer("Something went wrong."
                              " Please, check if the country name is correct and try again")
-
-
-# @dp.message_handler(commands=['10_best'])
-# async def select_func(message: types.Message, state: FSMContext):
-#     pos.save
-
 
 if __name__ == '__main__':
     logging.getLogger('startup').info("Starting via pooling")

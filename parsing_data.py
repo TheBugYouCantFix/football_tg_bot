@@ -4,6 +4,11 @@ import matplotlib.pyplot as plt
 
 from datetime import date
 
+import logging
+
+
+my_logger = logging.getLogger('parsing_logger')
+
 
 class InternationalMatchesParser:
 
@@ -114,9 +119,7 @@ class InternationalMatchesParser:
 
     @staticmethod
     def build_win_rate_graph(df: pd.DataFrame, n=5) -> None:
-        print(n)
         df = df.head(n)
-        print(df)
         df.plot.bar(x='country', y='win_rate')
         plt.show()
 
@@ -165,5 +168,7 @@ class InternationalMatchesParser:
             # Setting values
             self.win_rate_df.at[i, 'year'] = year
             self.win_rate_df.at[i, 'wr_df'] = wr_df
+
+            logging.info(f'year {year} stored')
 
         return self.win_rate_df
