@@ -8,15 +8,11 @@ class PickleObjectSaver:
     EXTENSION = '.pickle'
 
     @staticmethod
-    def get_path(filename):
-        path = os.path.relpath(f'../pickle_data/{filename}', './')
-        return path
-
-    def save_object(self, obj, name: str) -> None:
+    def save_object(obj, name: str, update=False) -> None:
         filename = f'{name}.pickle'
-        path = self.get_path(filename)
+        path = os.path.relpath(f'../pickle_data/{filename}', './')
 
-        if Path(path).exists():
+        if Path(path).exists() and not update:
             return
 
         dumped = pickle.dumps(obj)
@@ -24,13 +20,15 @@ class PickleObjectSaver:
         with open(path, 'wb') as f:
             f.write(dumped)
 
-    def get_object(self, filename: str):
-        path = self.get_path(filename)
+    @staticmethod
+    def get_object(filename: str):
+        path = os.path.relpath(f'./pickle_data/{filename}', './')
+        print(os.path.abspath(path))
 
         if not Path(path).exists():
             return
 
-        with open(path, 'wb') as f:
+        with open(path, 'rb') as f:
             obj = pickle.loads(f.read())
 
         return obj

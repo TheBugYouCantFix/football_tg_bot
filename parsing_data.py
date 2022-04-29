@@ -23,7 +23,7 @@ class InternationalMatchesParser:
         self.df['id'] = self.df.index
         self.df.insert(0, 'id', self.df.pop('id'))
 
-        self.win_rate_df = pd.DataFrame(columns=['year', 'wr_df'])
+        self.win_rate_df = pd.DataFrame(columns=['year', 'matches_played', 'wins', 'wr_df'])
 
     @staticmethod
     def get_country_df(frame: pd.DataFrame, country: str) -> pd.DataFrame:
@@ -104,6 +104,21 @@ class InternationalMatchesParser:
 
         return self.df[filtered]
 
+    def in_year(self, year: int) -> pd.DataFrame:
+        """
+        Returns the df of matched held in a given year
+
+        :param year:
+        :return:
+        """
+
+        if not self.year_is_valid(year):
+            return self.df
+
+        filtered = self.df['date'].str[:4].astype(int) == year
+
+        return self.df[filtered]
+
     def get_country_win_rate(self, df: pd.DataFrame, country: str) -> float:
         wins = self.get_n_of_wins_for_country(df, country)
         matches_played = self.matches_played(df, country)
@@ -123,28 +138,43 @@ class InternationalMatchesParser:
         df.plot.bar(x='country', y='win_rate')
         plt.show()
 
-    def fill_countries_win_rate_df(self, df: pd.DataFrame) -> pd.DataFrame:
+    def fill_countries_win_rate_df(self, df: pd.DataFrame, base_df: pd.DataFrame) -> pd.DataFrame:
         data = []
 
         for country in pc.countries:
+
             name = country.name
-            rate = self.get_country_win_rate(df, name)
 
-            if rate == -1 and hasattr(country, 'official_name'):
+            p = self.matches_played(df, name)  # matches played in the year
+            w = self.get_n_of_wins_for_country(df, name)  # wins in the year
+
+            matches_after_prev_year = self.matches_played(base_df, name)  # matches played after the previous year
+            matches = matches_after_prev_year - p  # matches played after the year
+
+            if matches == 0 and hasattr(country, 'official_name'):
                 name = country.official_name
+                matches = self.matches_played(base_df, name)
 
-            wins = self.get_n_of_wins_for_country(df, name)
-            rate = self.get_country_win_rate(df, name)
+            wins = self.get_n_of_wins_for_country(base_df, name) - w  # wins played after the year
 
-            if rate == -1:
-                continue
+            if matches == 0:
+                rate = 0
+            else:
+                rate = (wins / matches) * 100
+                rate = round(rate, 1)
 
-            data.append([name, wins, rate])
+            data.append([name, matches, wins, rate])
 
-        df = pd.DataFrame(data, columns=['country', 'wins', 'win_rate'])
+        df = pd.DataFrame(data,
+                          columns=['country', 'matches_played', 'wins', 'win_rate']
+                          )
 
         max_n_of_wins = df['wins'].max()
         for i in range(df.shape[0]):
+            if max_n_of_wins == 0:
+                df.at[i, 'win_rate'] = 0
+                continue
+
             row = df.iloc[i]
             wins = row['wins']
 
@@ -161,9 +191,14 @@ class InternationalMatchesParser:
     def get_country_all_time_wr_df(self) -> pd.DataFrame:
         parsing_logger.info('data frame filling started...')
 
-        for year in range(self.START_YEAR, date.today().year):
-            df = self.after_year(year)
-            wr_df = self.fill_countries_win_rate_df(df)
+        # Pivot data
+        base_df = self.df
+        self.win_rate_df.at[0, 'year'] = self.START_YEAR
+        self.win_rate_df.at[0, 'wr_df'] = base_df
+
+        for year in range(self.START_YEAR + 1, date.today().year):
+            df = self.in_year(year)
+            wr_df = self.fill_countries_win_rate_df(df, base_df)
 
             i = year - self.START_YEAR  # calculating index
 
@@ -171,7 +206,8 @@ class InternationalMatchesParser:
             self.win_rate_df.at[i, 'year'] = year
             self.win_rate_df.at[i, 'wr_df'] = wr_df
 
+            base_df = self.after_year(year)
+
             parsing_logger.info(f'year {year} stored')
 
         return self.win_rate_df
-

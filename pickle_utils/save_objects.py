@@ -10,9 +10,11 @@ path = os.path.relpath('../data/results.csv')
 imp = InternationalMatchesParser(path)
 
 if __name__ == '__main__':
+    # takes 1 hour 32 minutes to run
     setup_logging()
 
     df = imp.get_country_all_time_wr_df()
     NAME = 'all_time_wr_df'
 
-    pos.save_object(df, NAME)
+    # set the update argument to True to rewrite the file
+    pos.save_object(df, NAME, update=False)
