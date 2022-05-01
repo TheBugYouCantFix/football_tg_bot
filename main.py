@@ -44,7 +44,10 @@ async def start(message: types.Message):
 @dp.message_handler(commands=['select_func'])
 async def select_func(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
+
     keyboard.add(types.InlineKeyboardButton('Win rate', callback_data='wr'))
+    keyboard.add(types.InlineKeyboardButton('Country win rate graph', callback_data='sg'))
+
     await message.answer("Select a function", reply_markup=keyboard)
     await ActionsStates.start.set()
 
@@ -77,6 +80,8 @@ async def get_year(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=WinRateStates.choose_year)
 async def win_rate(message: types.Message, state: FSMContext):
+    current_state = await state.get_state()
+
     try:
         data = await state.get_data()
         country = data.get('country').strip()
@@ -104,6 +109,7 @@ async def win_rate(message: types.Message, state: FSMContext):
         main_logger.error(e)
         await message.answer("Something went wrong."
                              " Please, check if the country name is correct and try again")
+
 
 if __name__ == '__main__':
     logging.getLogger('startup').info("Starting via pooling")

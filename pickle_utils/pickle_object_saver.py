@@ -23,7 +23,6 @@ class PickleObjectSaver:
     @staticmethod
     def get_object(filename: str):
         path = os.path.relpath(f'./pickle_data/{filename}', './')
-        print(os.path.abspath(path))
 
         if not Path(path).exists():
             return

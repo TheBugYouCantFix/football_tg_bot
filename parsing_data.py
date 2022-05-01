@@ -1,6 +1,5 @@
 import pandas as pd
 import pycountry as pc
-import matplotlib.pyplot as plt
 
 from datetime import date
 
@@ -13,7 +12,7 @@ parsing_logger = logging.getLogger('parsing_logger')
 class InternationalMatchesParser:
 
     DRAW = 'draw'
-    START_YEAR = 1872
+    START_YEAR = 1873
 
     def __init__(self, path='./data/results.csv'):
         self.PATH = path
@@ -132,12 +131,6 @@ class InternationalMatchesParser:
 
         return win_rate
 
-    @staticmethod
-    def build_win_rate_graph(df: pd.DataFrame, n=5) -> None:
-        df = df.head(n)
-        df.plot.bar(x='country', y='win_rate')
-        plt.show()
-
     def fill_countries_win_rate_df(self, df: pd.DataFrame, base_df: pd.DataFrame) -> pd.DataFrame:
         data = []
 
@@ -151,7 +144,8 @@ class InternationalMatchesParser:
             matches_after_prev_year = self.matches_played(base_df, name)  # matches played after the previous year
             matches = matches_after_prev_year - p  # matches played after the year
 
-            if matches == 0 and hasattr(country, 'official_name'):
+            if (matches == 0 or not isinstance(matches, int))\
+                    and hasattr(country, 'official_name'):
                 name = country.official_name
                 matches = self.matches_played(base_df, name)
 
@@ -193,10 +187,10 @@ class InternationalMatchesParser:
 
         # Pivot data
         base_df = self.df
-        self.win_rate_df.at[0, 'year'] = self.START_YEAR
+        self.win_rate_df.at[0, 'year'] = self.START_YEAR - 1
         self.win_rate_df.at[0, 'wr_df'] = base_df
 
-        for year in range(self.START_YEAR + 1, date.today().year):
+        for year in range(self.START_YEAR, date.today().year):
             df = self.in_year(year)
             wr_df = self.fill_countries_win_rate_df(df, base_df)
 
