@@ -10,7 +10,7 @@ from config import Config
 from aiogram import Bot, Dispatcher, executor, types
 
 from parsing_data import InternationalMatchesParser
-from states import ActionsStates, WinRateStates
+from states import ActionsStates, WinRateStates, TopGraphStates
 
 from pickle_utils.pickle_object_saver import PickleObjectSaver
 from graph_maker import GraphMaker
@@ -131,7 +131,6 @@ async def win_rate(message: types.Message, state: FSMContext):
                              reply_markup=keyboard)
 
         await ActionsStates.yes_no.set()
-        await state.update_data(country=country)
 
     except Exception as e:
         main_logger.error(e)
@@ -149,6 +148,28 @@ async def send_country_wr_graph(message: types.CallbackQuery, state: FSMContext)
 
         await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
         os.remove(filename)
+
+    await state.finish()
+
+
+@dp.message_handler(state=ActionsStates.top)
+async def n_countries(message: types.Message, state: FSMContext):
+    year = message.text
+    await state.update_data(year=year)
+    await message.answer("Input the number of countries displayed in a graph(from 5 to 10)")
+    await TopGraphStates.choose_n.set()
+
+
+@dp.message_handler(state=TopGraphStates.choose_n)
+async def n_countries_graph(message: types.Message, state: FSMContext):
+    n = message.text
+
+    data = await state.get_data()
+    year = data.get('year').strip()
+
+    filename = gm.n_best_by_wr(year, n)
+    await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
+    os.remove(filename)
 
     await state.finish()
 
