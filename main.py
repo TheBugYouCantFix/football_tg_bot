@@ -1,4 +1,6 @@
 import logging
+import os
+
 from logging_setup import setup_logging
 
 from aiogram.dispatcher import FSMContext
@@ -10,6 +12,9 @@ from aiogram import Bot, Dispatcher, executor, types
 from parsing_data import InternationalMatchesParser
 from states import ActionsStates, WinRateStates
 
+from pickle_utils.pickle_object_saver import PickleObjectSaver
+from graph_maker import GraphMaker
+
 setup_logging()
 main_logger = logging.getLogger('main_logger')
 
@@ -18,6 +23,11 @@ bot = Bot(token=Config.BOT_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 imp = InternationalMatchesParser()
+
+pos = PickleObjectSaver()
+file = 'all_time_wr_df.pickle'
+
+gm = GraphMaker(pos.get_object(file))
 
 
 @dp.message_handler(commands=['about'], state='*')
@@ -47,6 +57,7 @@ async def select_func(message: types.Message):
 
     keyboard.add(types.InlineKeyboardButton('Win rate', callback_data='wr'))
     keyboard.add(types.InlineKeyboardButton('Country win rate graph', callback_data='sg'))
+    keyboard.add(types.InlineKeyboardButton('Top n countries by win rate', callback_data='top'))
 
     await message.answer("Select a function", reply_markup=keyboard)
     await ActionsStates.start.set()
@@ -59,6 +70,11 @@ async def choose(message: types.CallbackQuery):
                                "Input the country")
         await ActionsStates.wr.set()
 
+    elif message.data == 'top':
+        await bot.send_message(message.from_user.id,
+                               "Input the start year for data.")
+        await ActionsStates.top.set()
+
 
 @dp.message_handler(state=ActionsStates.wr)
 async def get_year(message: types.Message, state: FSMContext):
@@ -66,9 +82,13 @@ async def get_year(message: types.Message, state: FSMContext):
 
     # Validating input
     if imp.matches_played(imp.df, country) == 0:
-        await message.answer("No such team found. Please, check if the country name is correct and try again")
+        await message.answer(
+            "No such team found. Please, check if the country name is correct and try again"
+        )
+
         await bot.send_message(message.from_user.id,
                                "Input the country")
+
         await ActionsStates.wr.set()
         return
 
@@ -80,7 +100,6 @@ async def get_year(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=WinRateStates.choose_year)
 async def win_rate(message: types.Message, state: FSMContext):
-    current_state = await state.get_state()
 
     try:
         data = await state.get_data()
@@ -103,12 +122,35 @@ async def win_rate(message: types.Message, state: FSMContext):
               f"{rate}%"
 
         await message.answer(ans)
-        await state.finish()
+
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(types.InlineKeyboardButton('Yes', callback_data='yes'))
+        keyboard.add(types.InlineKeyboardButton('No', callback_data='no'))
+
+        await message.answer(f"Would you like to see a win rate graph of {country.capitalize()}?",
+                             reply_markup=keyboard)
+
+        await ActionsStates.yes_no.set()
+        await state.update_data(country=country)
 
     except Exception as e:
         main_logger.error(e)
         await message.answer("Something went wrong."
                              " Please, check if the country name is correct and try again")
+
+
+@dp.callback_query_handler(state=ActionsStates.yes_no)
+async def send_country_wr_graph(message: types.CallbackQuery, state: FSMContext):
+    if message.data == 'yes':
+        main_logger.info('sending graph...')
+        data = await state.get_data()
+        country = data.get('country').strip()
+        filename = gm.country_wr(country)
+
+        await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
+        os.remove(filename)
+
+    await state.finish()
 
 
 if __name__ == '__main__':

@@ -12,15 +12,19 @@ class GraphMaker:
         self.df = df[1:]  # start year is 1873 but the df starts from year 1873
         self.imp = InternationalMatchesParser()
 
-    def n_best_by_wr(self, year, n=5) -> None:
+    def n_best_by_wr(self, year: int, n=5) -> str:
         i = year - self.imp.START_YEAR
         wr_df = self.df.loc[i, 'wr_df'].head(n)
         wr_df.plot.bar(x='Country', y='Win_rate')
 
-        plt.show()
-        plt.title(f'Top {n} national football teams by win rate in {year}.')
+        plt.title(f'Top {n} national football teams by win rate since {year}.')
 
-    def country_wr(self, country):
+        filename = 'n_best_wr.png'
+        plt.savefig(filename)
+
+        return filename
+
+    def country_wr(self, country: str) -> str:
         x, y = [], []
 
         for index, row in self.df.iterrows():
@@ -37,20 +41,24 @@ class GraphMaker:
             if year == datetime.date.today().year - 3:
                 break
 
+        plt.clf()
         plt.plot(x, y)
 
         plt.title(f'Win rate graph for national football team of {country.capitalize()}.')
         plt.xlabel('Year')
         plt.ylabel('Win rate')
 
-        plt.show()
+        filename = 'country_wr.png'
+        plt.savefig(filename)
+
+        return filename
 
 
 if __name__ == '__main__':
     pos = PickleObjectSaver()
 
-    filename = 'all_time_wr_df.pickle'
-    df = pos.get_object(filename)
+    file = 'all_time_wr_df.pickle'
+    df = pos.get_object(file)
 
     gm = GraphMaker(df)
     gm.country_wr('germany')
