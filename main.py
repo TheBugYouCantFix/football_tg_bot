@@ -11,7 +11,6 @@ from aiogram import Bot, Dispatcher, executor, types
 
 from parsing_data import InternationalMatchesParser
 from states import ActionsStates, WinRateStates, TopGraphStates
-
 from pickle_utils.pickle_object_saver import PickleObjectSaver
 from graph_maker import GraphMaker
 
@@ -56,7 +55,7 @@ async def select_func(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
 
     keyboard.add(types.InlineKeyboardButton('Win rate', callback_data='wr'))
-    keyboard.add(types.InlineKeyboardButton('Country win rate graph', callback_data='sg'))
+    keyboard.add(types.InlineKeyboardButton('Country win rate graph', callback_data='cg'))
     keyboard.add(types.InlineKeyboardButton('Top n countries by win rate', callback_data='top'))
 
     await message.answer("Select a function", reply_markup=keyboard)
@@ -69,6 +68,11 @@ async def choose(message: types.CallbackQuery):
         await bot.send_message(message.from_user.id,
                                "Input the country")
         await ActionsStates.wr.set()
+
+    elif message.data == 'cg':
+        await bot.send_message(message.from_user.id,
+                               "Input the country")
+        await ActionsStates.country_graph.set()
 
     elif message.data == 'top':
         await bot.send_message(message.from_user.id,
@@ -168,6 +172,17 @@ async def n_countries_graph(message: types.Message, state: FSMContext):
     year = data.get('year').strip()
 
     filename = gm.n_best_by_wr(year, n)
+    await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
+    os.remove(filename)
+
+    await state.finish()
+
+
+@dp.message_handler(state=ActionsStates.country_graph)
+async def country_wr_graph(message: types.Message, state: FSMContext):
+    country = message.text.strip()
+    filename = gm.country_wr(country)
+
     await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
     os.remove(filename)
 
