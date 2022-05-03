@@ -181,13 +181,18 @@ async def n_countries_graph(message: types.Message, state: FSMContext):
 @dp.message_handler(state=ActionsStates.country_graph)
 async def country_wr_graph(message: types.Message, state: FSMContext):
     country = message.text.strip()
-    filename = gm.country_wr(country)
 
-    await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
-    os.remove(filename)
+    try:
+        filename = gm.country_wr(country)
 
-    await state.finish()
+        await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
+        os.remove(filename)
 
+        await state.finish()
+    except Exception as e:
+        main_logger.error(e)
+        await message.answer("Something went wrong."
+                             " Please, check if the country name is correct and try again")
 
 if __name__ == '__main__':
     logging.getLogger('startup').info("Starting via pooling")
