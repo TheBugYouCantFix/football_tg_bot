@@ -14,9 +14,12 @@ from states import ActionsStates, WinRateStates, TopGraphStates
 from pickle_utils.pickle_object_saver import PickleObjectSaver
 from graph_maker import GraphMaker
 
+from db_manager import DBManager
+
+db = DBManager('./data/db/users.sqlite')
+
 setup_logging()
 main_logger = logging.getLogger('main_logger')
-
 
 bot = Bot(token=Config.BOT_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
@@ -42,6 +45,7 @@ Press "/" to see the typehints of the commands and their description.
 
 @dp.message_handler(commands=['start'], state='*')
 async def start(message: types.Message):
+    db.add_user(message.from_user.id)
 
     await message.answer(
         f'Hello and welcome, {message.from_user.first_name} {message.from_user.last_name}!'
@@ -189,6 +193,7 @@ async def country_wr_graph(message: types.Message, state: FSMContext):
         os.remove(filename)
 
         await state.finish()
+
     except Exception as e:
         main_logger.error(e)
         await message.answer("Something went wrong."
