@@ -59,7 +59,7 @@ async def start(message: types.Message, state: FSMContext):
     await select_func(message)
 
 
-@dp.message_handler(commands=['select_func'])
+@dp.message_handler(commands=['select_func'], state='*')
 async def select_func(message: types.Message):
     keyboard = types.InlineKeyboardMarkup()
 
