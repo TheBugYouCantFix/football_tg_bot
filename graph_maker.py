@@ -1,9 +1,12 @@
 import datetime
+import string
 
 import matplotlib.pyplot as plt
 
 from pickle_utils.pickle_object_saver import PickleObjectSaver
 from parsing_data import InternationalMatchesParser
+
+from country_utils import handle_ambiguous_country_names
 
 
 class GraphMaker:
@@ -38,13 +41,16 @@ class GraphMaker:
         return filename
 
     def country_wr(self, country: str) -> str:
+        country_name = handle_ambiguous_country_names(country)
+        country_name = string.capwords(country_name)
+
         x, y = [], []
 
         for index, row in self.df.iterrows():
 
             wr_df = row['wr_df']
             year = row.iloc[0]
-            filtered = wr_df['country'] == country.capitalize()
+            filtered = wr_df['country'] == country_name
             rate = wr_df[filtered].iloc[0, 3]
             rate = round(rate, 1)
 
@@ -57,7 +63,7 @@ class GraphMaker:
         plt.clf()
         plt.plot(x, y)
 
-        plt.title(f'Win rate graph for national football team of {country.capitalize()}.')
+        plt.title(f'Win rate graph for national football team of {country_name}.')
         plt.xlabel('Year')
         plt.ylabel('Win rate')
 

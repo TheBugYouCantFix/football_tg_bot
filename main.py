@@ -1,7 +1,10 @@
 import logging
 import os
+import string
 
 from logging_setup import setup_logging
+
+from country_utils import handle_ambiguous_country_names
 
 from aiogram.dispatcher import FSMContext
 
@@ -44,7 +47,9 @@ Press "/" to see the typehints of the commands and their description.
 
 
 @dp.message_handler(commands=['start'], state='*')
-async def start(message: types.Message):
+async def start(message: types.Message, state: FSMContext):
+    await state.finish()
+
     db.add_user(message.from_user.id)
 
     await message.answer(
@@ -86,7 +91,8 @@ async def choose(message: types.CallbackQuery):
 
 @dp.message_handler(state=ActionsStates.wr)
 async def get_year(message: types.Message, state: FSMContext):
-    country = message.text
+    country = message.text.strip()
+    country = string.capwords(handle_ambiguous_country_names(country))
 
     # Validating input
     if imp.matches_played(imp.df, country) == 0:
@@ -112,6 +118,7 @@ async def win_rate(message: types.Message, state: FSMContext):
     try:
         data = await state.get_data()
         country = data.get('country').strip()
+        country = string.capwords(handle_ambiguous_country_names(country))
 
         year = message.text
         main_logger.info(year)
@@ -126,7 +133,7 @@ async def win_rate(message: types.Message, state: FSMContext):
 
         main_logger.info(country)
 
-        ans = f"Win rate of {country.capitalize()} national team {since_year}: " \
+        ans = f"Win rate of {country} national team {since_year}: " \
               f"{rate}%"
 
         await message.answer(ans)
@@ -135,7 +142,7 @@ async def win_rate(message: types.Message, state: FSMContext):
         keyboard.add(types.InlineKeyboardButton('Yes', callback_data='yes'))
         keyboard.add(types.InlineKeyboardButton('No', callback_data='no'))
 
-        await message.answer(f"Would you like to see a win rate graph of {country.capitalize()}?",
+        await message.answer(f"Would you like to see a win rate graph of {country}?",
                              reply_markup=keyboard)
 
         await ActionsStates.yes_no.set()

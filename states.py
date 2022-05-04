@@ -19,6 +19,3 @@ class WinRateStates(StatesGroup):
 
 class TopGraphStates(StatesGroup):
     choose_n = State()
-
-
-
