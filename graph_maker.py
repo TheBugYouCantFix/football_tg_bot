@@ -35,6 +35,8 @@ class GraphMaker:
         plt.xlabel('Country')
         plt.ylabel('Year')
 
+        plt.xticks(rotation=0)
+
         filename = 'n_best_wr.png'
         plt.savefig(filename)
 

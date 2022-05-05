@@ -1,7 +1,7 @@
 import logging
-import os
 import string
 
+from aiofiles.os import remove
 from logging_setup import setup_logging
 
 from country_utils import handle_ambiguous_country_names
@@ -162,7 +162,7 @@ async def send_country_wr_graph(message: types.CallbackQuery, state: FSMContext)
         filename = gm.country_wr(country)
 
         await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
-        os.remove(filename)
+        await remove(filename)
 
     await state.finish()
 
@@ -184,7 +184,7 @@ async def n_countries_graph(message: types.Message, state: FSMContext):
 
     filename = gm.n_best_by_wr(year, n)
     await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
-    os.remove(filename)
+    await remove(filename)
 
     await state.finish()
 
@@ -197,7 +197,7 @@ async def country_wr_graph(message: types.Message, state: FSMContext):
         filename = gm.country_wr(country)
 
         await bot.send_photo(message.from_user.id, photo=open(filename, 'rb'))
-        os.remove(filename)
+        await remove(filename)
 
         await state.finish()
 

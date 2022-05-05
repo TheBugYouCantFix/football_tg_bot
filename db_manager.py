@@ -1,6 +1,8 @@
 import sqlite3
 import os.path
 
+from aiomisc import threaded
+
 import logging
 
 db_logger = logging.getLogger('db_logger')
@@ -16,10 +18,12 @@ class DBManager:
         self.cursor = self.connect.cursor()
         self.user_counter = 0
 
+    @threaded
     def user_exists(self, user_id):
         result = self.cursor.execute("SELECT id FROM users WHERE user_id=?", (user_id,))
         return bool(result.fetchall())
 
+    @threaded
     def add_user(self, user_id):
         if not self.user_exists(user_id):
             self.cursor.execute("INSERT INTO users(user_id) VALUES(?)", (user_id, ))
