@@ -50,7 +50,7 @@ Press "/" to see the typehints of the commands and their description.
 async def start(message: types.Message, state: FSMContext):
     await state.finish()
 
-    db.add_user(message.from_user.id)
+    await db.add_user(message.from_user.id)
 
     await message.answer(
         f'Hello and welcome, {message.from_user.first_name} {message.from_user.last_name}!'
