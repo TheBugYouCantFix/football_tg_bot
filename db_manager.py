@@ -35,5 +35,5 @@ class DBManager:
 
     async def add_user(self, user_id):
         if not await self.user_exists(user_id):
-            self.add_user_by_id(user_id)
+            await self.add_user_by_id(user_id)
 

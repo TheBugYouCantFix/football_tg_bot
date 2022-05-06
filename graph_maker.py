@@ -16,6 +16,13 @@ class GraphMaker:
         self.imp = InternationalMatchesParser()
 
     def n_best_by_wr(self, year: str, n: str) -> str:
+        """
+        Builds the bar graph of top {n} best national teams by win rate since {year}
+
+        :param year:
+        :param n:
+        :return: the name of the file containing a graph
+        """
         if not year.isdigit() or \
                 int(year) < self.imp.START_YEAR or \
                 int(year) > datetime.date.today().year:
@@ -35,7 +42,7 @@ class GraphMaker:
         plt.xlabel('Country')
         plt.ylabel('Year')
 
-        plt.xticks(rotation=0)
+        plt.xticks(rotation=25)
 
         filename = 'n_best_wr.png'
         plt.savefig(filename)
@@ -43,6 +50,13 @@ class GraphMaker:
         return filename
 
     def country_wr(self, country: str) -> str:
+        """
+        Builds the graph of a national team's win rate after every year during its entire match history
+
+        :param country:
+        :return: the name of the file containing a graph
+        """
+
         country_name = handle_ambiguous_country_names(country)
         country_name = string.capwords(country_name)
 
